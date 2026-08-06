@@ -42,7 +42,29 @@ void RidesDatabase::getCurrentRides() {
 
 }
 
-int RidesDatabase::insertNewRides(/*container*/) {
+int RidesDatabase::insertNewRides(std::vector<RideRecord> rides) {
+
+    const char* sql = "INSERT INTO wait_times (ride_name, land_name, wait_time, is_open, recorded_at) "
+        "VALUES (?, ?, ?, ?, ?);";
+    
+    sqlite3_stmt *stmt = nullptr;
+
+    sqlCode = sqlite3_prepare_v2(ridesDb, sql, -1, &stmt, nullptr);
+
+        for (const auto& record : rides)
+        {
+            sqlite3_bind_text(stmt, 1, record.rideName.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, record.landName.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int(stmt, 3, record.waitTime);
+            sqlite3_bind_int(stmt, 4, record.isOpen ? 1 : 0);
+            sqlite3_bind_text(stmt, 5, record.recordedAt.c_str(), -1, SQLITE_TRANSIENT);
+            
+            sqlite3_step(stmt);
+            sqlite3_reset(stmt);
+            sqlite3_clear_bindings(stmt);
+        }
+    
+        sqlite3_finalize(stmt);
     return 0;
 }
 

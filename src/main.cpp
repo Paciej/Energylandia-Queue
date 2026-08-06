@@ -30,6 +30,8 @@ int main() {
     //Parser.printRides();
     RidesDatabase db;
 
+    db.insertNewRides(Parser.getRides());
+
     char exit = 'x';
 
     std::cout << "Press q and press enter to exit" << std::endl;

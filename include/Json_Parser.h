@@ -1,6 +1,10 @@
+#pragma once
+
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include <string.h>
+#include <vector>
+#include "Ride_Record.h"
 
 class JsonParser {
 private:
@@ -18,6 +22,7 @@ public:
     int httpGet();
     void showJson();
     void printRides();
+    std::vector<RideRecord> getRides();
 
     ~JsonParser() {
         curl_global_cleanup();

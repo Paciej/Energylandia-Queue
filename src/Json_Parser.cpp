@@ -40,12 +40,9 @@ int JsonParser::httpGet() {
 }
 
 void JsonParser::showJson() {
-    //std::cout << jsonData << std::endl;
-
-    //for (auto it = jsonData.begin(); it != jsonData.end(); it++) {
-        ////std::cout << *it << std::endl;
-        //std::cout << it.key() << " : " << it.value() << std::endl;
-    //}
+    for (auto it = jsonData.begin(); it != jsonData.end(); it++) {
+        std::cout << it.key() << " : " << it.value() << std::endl;
+    }
 }
 
 void JsonParser::printRides() {
@@ -57,4 +54,24 @@ void JsonParser::printRides() {
             std::cout << "Wait time: " << ride["wait_time"].get<unsigned int>() << std::endl << std::endl;
         }
     }
+}
+
+std::vector<RideRecord> JsonParser::getRides() {
+    std::vector<RideRecord> records;    
+
+    for (auto& land : jsonData["lands"]) {
+        std::string landName = land["name"].get<std::string>();
+
+        for (auto& ride : land["rides"]) {
+            records.push_back(RideRecord {
+                landName,
+                ride["name"].get<std::string>(),
+                ride["wait_time"].get<int>(),
+                ride.value("is_open", false),
+                ride["last_updated"].get<std::string>()
+            });
+        }
+    }
+
+    return records;
 }
