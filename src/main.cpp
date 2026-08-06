@@ -30,8 +30,11 @@ int main() {
     //Parser.printRides();
     RidesDatabase db;
 
-    while (true) {
+    char exit = 'x';
 
+    std::cout << "Press q and press enter to exit" << std::endl;
+    while (exit != 'q') {
+        std::cin >> exit;
     }
 
     return 0;

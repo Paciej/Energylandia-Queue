@@ -1,4 +1,5 @@
 #include "Rides_Database.h"
+#include <iostream>
 
 RidesDatabase::RidesDatabase(const char* filename) {
     sqlCode = sqlite3_open_v2(filename, &ridesDb, SQLITE_OPEN_READWRITE, nullptr);
@@ -17,10 +18,23 @@ RidesDatabase::RidesDatabase(const char* filename) {
             "ride_name TEXT NOT NULL,"
             "land_name TEXT,"
             "wait_time INTEGER,"
-            "is_open BOOLEAN"
+            "is_open BOOLEAN,"
             "recorded_at TEXT NOT NULL);";
 
-        sqlite3_exec(ridesDb, sql, nullptr, nullptr, nullptr);
+        sqlCode = sqlite3_exec(ridesDb, sql, nullptr, nullptr, nullptr);
+    }
+
+    if (sqlCode == SQLITE_OK) {
+        std::cout << "Connection successfull" << std::endl;
+    }
+}
+
+RidesDatabase::~RidesDatabase() {
+    std::cout << "Closing Database..." << std::endl;
+    sqlCode = sqlite3_close(ridesDb);
+
+    if (sqlCode != SQLITE_OK) {
+        std::cout << "SQL Database can't close properly" << std::endl;
     }
 }
 
