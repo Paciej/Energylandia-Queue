@@ -4,18 +4,24 @@
 
 class JsonParser {
 private:
+    const char* url = "https://queue-times.com/parks/317/queue_times.json";
 
-CURL *curl;
-CURLcode res;
-const char* energyUrl = "https://queue-times.com/parks/317/queue_times.json";
-
-size_t write_callback(void *data, size_t size, size_t nmemb, void* userp);
+    CURL *curl;
+    CURLcode res;
+    nlohmann::json jsonData;
 
 public:
-JsonParser() {
-    curl = curl_easy_init();
-}
+    JsonParser() {
+        curl_global_init(CURL_GLOBAL_ALL);
+    }
 
-int httpGet();
+    int httpGet();
+    void showJson();
+    void printRides();
 
+    ~JsonParser() {
+        curl_global_cleanup();
+    }
 };
+
+static size_t write_callback(char *data, size_t size, size_t nmemb, void *userp);

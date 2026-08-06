@@ -9,6 +9,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 
 add_executable(collector
     src/main.cpp
+    src/Json_Parser.cpp
 )
 
 target_include_directories(collector PRIVATE
