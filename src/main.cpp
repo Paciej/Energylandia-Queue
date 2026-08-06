@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include "Json_Parser.h"
+#include "Rides_Database.h"
 
 int main() {
 //    CURL *curl;
@@ -26,7 +27,12 @@ int main() {
 
     JsonParser Parser;
     std::cout << "httpGet response: " << Parser.httpGet() << std::endl;
-    Parser.showJson();
+    //Parser.printRides();
+    RidesDatabase db;
+
+    while (true) {
+
+    }
 
     return 0;
 }
