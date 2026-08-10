@@ -7,12 +7,12 @@
 class RidesDatabase {
 private:
     sqlite3 *ridesDb;
-    int sqlCode;
+    const char *dbName;
 
 public:
-    RidesDatabase(const char* filename = "Energy_Rides_DB");
+    RidesDatabase(const char* filename = "../Energy_Rides_DB");
 
-    int insertNewRides(std::vector<RideRecord> rides);
+    void insertNewRides(std::vector<RideRecord> rides);
     void getCurrentRides();
     int openDatabase();
     int closeDatabase();
