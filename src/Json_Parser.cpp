@@ -10,7 +10,7 @@ static size_t write_callback(char *data, size_t size, size_t nmemb, void *userp)
     return size * nmemb;
 }
 
-int JsonParser::httpGet() {
+int JsonParser::httpGet(const char* url) {
 
     if (!curl) {
         return -1;
@@ -19,7 +19,7 @@ int JsonParser::httpGet() {
     std::string responseBuf;
 
     curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, this->url);
+    curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuf);
     this->res = curl_easy_perform(curl);
@@ -53,6 +53,20 @@ void JsonParser::printRides() {
             std::cout << "ride: " << ride["name"].get<std::string>() << std::endl;
             std::cout << "Wait time: " << ride["wait_time"].get<unsigned int>() << std::endl << std::endl;
         }
+    }
+}
+
+void JsonParser::printRides(std::vector<RideRecord> records) {
+    std::cout << " Ride \t\t Land \t Time   Open  Recorded at" << std::endl;
+    for (auto& record : records) {
+        std::cout << record.rideName << "\t\t" << record.landName << "\t" << record.waitTime << "  " << record.isOpen << " " << record.recordedAt << std::endl;
+    }
+}
+
+void JsonParser::printRides(std::vector<RideAverage> records) {
+    std::cout << " Ride \t\t Land \t Time" << std::endl;
+    for (auto& record : records) {
+        std::cout << record.rideName << "\t\t" << record.landName << "  " << record.avgWait << std::endl;
     }
 }
 

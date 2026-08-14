@@ -8,8 +8,6 @@
 
 class JsonParser {
 private:
-    const char* url = "https://queue-times.com/parks/317/queue_times.json";
-
     CURL *curl;
     CURLcode res;
     nlohmann::json jsonData;
@@ -19,14 +17,14 @@ public:
         curl_global_init(CURL_GLOBAL_ALL);
     }
 
-    int httpGet();
+    int httpGet(const char* url = "https://queue-times.com/parks/317/queue_times.json");
     void showJson();
     void printRides();
+    void printRides(std::vector<RideRecord> records);
+    void printRides(std::vector<RideAverage> records);
     std::vector<RideRecord> getRides();
 
     ~JsonParser() {
         curl_global_cleanup();
     }
 };
-
-static size_t write_callback(char *data, size_t size, size_t nmemb, void *userp);

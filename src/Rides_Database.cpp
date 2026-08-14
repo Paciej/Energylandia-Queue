@@ -14,12 +14,13 @@ RidesDatabase::RidesDatabase(const char* filename) {
         }
 
         const char* sql = "CREATE TABLE wait_times ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            "ride_name TEXT NOT NULL,"
-            "land_name TEXT,"
-            "wait_time INTEGER,"
-            "is_open BOOLEAN,"
-            "recorded_at TEXT NOT NULL);";
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            "ride_name TEXT NOT NULL,"
+                            "land_name TEXT,"
+                            "wait_time INTEGER,"
+                            "is_open BOOLEAN,"
+                            "recorded_at TEXT NOT NULL);"
+        ;
 
         if (sqlite3_exec(ridesDb, sql, nullptr, nullptr, nullptr) != SQLITE_OK) {
             sqlite3_exec(ridesDb, "ROLLBACK;", nullptr, nullptr, nullptr);
@@ -40,8 +41,89 @@ RidesDatabase::~RidesDatabase() {
     }
 }
 
-void RidesDatabase::getCurrentRides() {
+std::vector<RideRecord> RidesDatabase::getRidesLatest() {
 
+    const char* sql = "SELECT * "
+        "FROM wait_times w "
+        "WHERE recorded_at = ("
+        " SELECT MAX(w2.recorded_at) "
+        " FROM wait_times w2 "
+        " WHERE w2.ride_name = w.ride_name"
+        ");"
+    ;
+
+    std::vector<RideRecord> rides;
+
+    sqlite3_stmt *stmt = nullptr;
+    if (sqlite3_prepare_v2(ridesDb, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(std::string("Error preparing transaction: ") + sqlite3_errmsg(ridesDb));
+    }
+
+    int rc = 0;
+
+    try {
+        while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+            RideRecord record = {};
+            record.rideName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            record.landName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            record.waitTime = sqlite3_column_int(stmt, 3);
+            record.isOpen   = static_cast<bool>(sqlite3_column_int(stmt, 4));
+            record.recordedAt = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+            rides.push_back(record);
+        }
+
+        if (rc != SQLITE_DONE) {
+            throw std::runtime_error(std::string("Error reading rows: ") + sqlite3_errmsg(ridesDb));
+        }
+    }
+    catch (...) {
+        sqlite3_finalize(stmt);
+        throw;
+    }
+
+    sqlite3_finalize(stmt);
+    return rides;
+}
+
+std::vector<RideAverage> RidesDatabase::getRidesAvg(const std::string& date) {
+
+    const char* sql = "SELECT ride_name, land_name, AVG(wait_time) "
+        "FROM wait_times "
+        "WHERE DATE(recorded_at) = ? AND is_open = 1 "
+        "GROUP BY ride_name, land_name "
+        "ORDER BY land_name;"
+    ;
+
+    std::vector<RideAverage> rides;
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(ridesDb, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(std::string("Error preparing statement: ") + sqlite3_errmsg(ridesDb));
+    }
+
+    sqlite3_bind_text(stmt, 1, date.c_str(), -1, SQLITE_TRANSIENT);
+
+    int rc = 0;
+    try {
+        while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+            RideAverage avg = {};
+            avg.rideName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            avg.landName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            avg.avgWait  = sqlite3_column_double(stmt, 2);
+            rides.push_back(avg);
+        }
+
+        if (rc != SQLITE_DONE) {
+            throw std::runtime_error(std::string("Error reading rows: ") + sqlite3_errmsg(ridesDb));
+        }
+    }
+    catch (...) {
+        sqlite3_finalize(stmt);
+        throw;
+    }
+
+    sqlite3_finalize(stmt);
+    return rides;
 }
 
 void RidesDatabase::insertNewRides(std::vector<RideRecord> rides) {
@@ -79,13 +161,11 @@ void RidesDatabase::insertNewRides(std::vector<RideRecord> rides) {
             sqlite3_bind_int(stmt, 4, record.isOpen ? 1 : 0);
             sqlite3_bind_text(stmt, 5, record.recordedAt.c_str(), -1, SQLITE_TRANSIENT);
             
-            int rc = sqlite3_step(stmt);
-
-            if (rc != SQLITE_DONE) {
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
                 throw std::runtime_error(std::string("Error making transaction: ") +
-                        std::to_string(rc) + 
                         sqlite3_errmsg(ridesDb));
             }
+
             sqlite3_reset(stmt);
             sqlite3_clear_bindings(stmt);
         }

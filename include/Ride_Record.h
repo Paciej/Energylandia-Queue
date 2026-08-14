@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+#include <string>
 
 struct RideRecord {
     std::string landName;
@@ -7,4 +7,10 @@ struct RideRecord {
     int waitTime;
     bool isOpen;
     std::string recordedAt;
+};
+
+struct RideAverage {
+    std::string landName;
+    std::string rideName;
+    int avgWait;
 };

@@ -10,10 +10,11 @@ private:
     const char *dbName;
 
 public:
-    RidesDatabase(const char* filename = "../Energy_Rides_DB");
+    RidesDatabase(const char* filename = "../Energy_Rides.db");
 
     void insertNewRides(std::vector<RideRecord> rides);
-    void getCurrentRides();
+    std::vector<RideRecord> getRidesLatest();
+    std::vector<RideAverage> getRidesAvg(const std::string& date);
     int openDatabase();
     int closeDatabase();
 
